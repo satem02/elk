@@ -1,0 +1,18 @@
+filebeat.inputs:
+- type: log
+paths:
+- '/var/lib/docker/containers/*/*.log'
+json.message_key: log
+json.keys_under_root: true
+processors:
+- add_docker_metadata: ~
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+  username: "elastic"
+  password: "changeme"
+setup.kibana:
+  host: "http://elasticsearch:5601"
+
+output.logstash:
+  hosts: ["127.0.0.1:5044"]
