@@ -1,8 +1,9 @@
-version: '2'
+version: '3'
 
 services:
 
   elasticsearch:
+    container_name: "elasticsearch"
     build:
       context: elasticsearch/
       args:
@@ -19,6 +20,7 @@ services:
       - elk
 
   logstash:
+    container_name: "logstash"
     build:
       context: logstash/
       args:
@@ -27,7 +29,7 @@ services:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
     ports:
-      - "5000:5000"
+      - "5044:5044"
       - "9600:9600"
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
@@ -37,6 +39,7 @@ services:
       - elasticsearch
 
   kibana:
+    container_name: "kibana"
     build:
       context: kibana/
       args:
@@ -49,8 +52,20 @@ services:
       - elk
     depends_on:
       - elasticsearch
+  
+  filebeat:
+    container_name: "filebeat"
+    build:
+      context: filebeat/
+      args:
+        ELK_VERSION: $ELK_VERSION
+    volumes:
+      - ./filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - elk
 
 networks:
-
   elk:
     driver: bridge
